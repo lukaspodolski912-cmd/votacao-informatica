@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Votação da Turma - 2025</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            /* Cores do Brasil Estilo Dark Premium */
+            --bg-gradient: radial-gradient(circle at top, #002776 0%, #001848 100%);
+            --card-bg: rgba(0, 39, 118, 0.6); /* Azul translúcido */
+            
+            --primary: #009c3b; /* Verde Bandeira */
+            --primary-hover: #00bf49;
+            
+            --gold: #ffdf00; /* Amarelo Ouro */
+            --gold-glow: rgba(255, 223, 0, 0.4);
+
+            --text-color: #ffffff;
+            --text-secondary: #e0e0e0;
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --danger-color: #ff3b30; /* Vermelho para alerta/reset */
+        }
+
+        * {
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-color);
+            font-family: "Poppins", sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Efeito de vidro (Glassmorphism) */
+        .card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Faixa decorativa Brasil no topo */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #009c3b 33%, #ffdf00 33%, #ffdf00 66%, #002776 66%);
+        }
+
+        h2 {
+            margin-top: 10px;
+            font-weight: 800;
+            font-size: 26px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+        }
+
+        h2 span {
+            color: var(--gold); /* Destaque em amarelo */
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="password"] {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            appearance: none;
+            /* Ícone de seta personalizado branco */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+
+        select option {
+            background-color: #002776; /* Fundo do dropdown */
+            color: white;
+        }
+
+        input[type="password"] { background-image: none; }
+
+        /* Foco com brilho DOURADO */
+        select:focus, input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px var(--gold-glow);
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 35px;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(0, 156, 59, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 156, 59, 0.6);
+        }
+
+        button:active { transform: translateY(0); }
+
+        /* Área de Resultados */
+        #respostasSec { display: none; margin-top: 20px; }
+
+        .result-group {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .result-group h3 {
+            color: var(--gold);
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .honra {
+            background: rgba(255, 223, 0, 0.1); /* Fundo amarelado */
+            border: 1px dashed var(--gold);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .honra strong {
+            color: var(--gold);
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: none;
+            color: var(--text-secondary);
+            margin-top: 15px;
+            font-size: 14px;
+            padding: 12px;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: none;
+        }
+
+        /* Novo estilo para o botão de resetar votos */
+        .btn-danger {
+            background: var(--danger-color);
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.5);
+            margin-top: 10px; /* Reduzi um pouco a margem */
+            font-size: 14px;
+            padding: 14px;
+        }
+        
+        .btn-danger:hover {
+            background: #cc2c23;
+        }
+
+        /* Responsividade para telas pequenas */
+        @media (max-width: 480px) {
+            .card { padding: 25px; }
+            h2 { font-size: 22px; }
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        
+        <div class="card">
+            <h2>🏆 Votação da Turma <span>2025</span></h2>
+
+            <label>Quem é você?</label>
+            <select id="usuario">
+                <option value="">Selecione seu nome...</option>
+                <option>Adrielly</option><option>Alex</option><option>Apollo</option><option>Brenda</option>
+                <option>Eduardo</option><option>Eike</option><option>Emerson</option><option>Enzo</option>
+                <option>Eric</option><option>Francisco</option><option>Gabriel</option>
+                <option>Gabryelly Mamede</option><option>Gustavo</option><option>Henrique</option>
+                <option>Hítalo</option><option>Isabelly</option><option>João Paulo</option>
+                <option>Joelison</option><option>Lukas</option><option>Maicon</option>
+                <option>Maria Clara</option><option>Maria Gabrielly</option><option>Maria Helloyse</option>
+                <option>Marianne</option><option>Marta</option><option>Matheus</option>
+                <option>Miguel</option><option>Murilo Alexandre</option><option>Murilo Alves</option>
+                <option>Nayla</option><option>Nayra</option><option>Nicolle</option>
+                <option>Paulo</option><option>Pedro</option><option>Richarlison</option>
+                <option>Ruan</option><option>Thalys</option><option>Thomas</option><option>Vitor</option>
+            </select>
+
+            <label>Seu voto vai para:</label>
+            <select id="aluno">
+                <option value="">Selecione o aluno...</option>
+                <option>Adrielly</option><option>Alex</option><option>Apollo</option><option>Brenda</option>
+                <option>Eduardo</option><option>Eike</option><option>Emerson</option><option>Enzo</option>
+                <option>Eric</option><option>Francisco</option><option>Gabriel</option>
+                <option>Gabryelly Mamede</option><option>Gustavo</option><option>Henrique</option>
+                <option>Hítalo</option><option>Isabelly</option><option>João Paulo</option>
+                <option>Joelison</option><option>Lukas</option><option>Maicon</option>
+                <option>Maria Clara</option><option>Maria Gabrielly</option><option>Maria Helloyse</option>
+                <option>Marianne</option><option>Marta</option><option>Matheus</option>
+                <option>Miguel</option><option>Murilo Alexandre</option><option>Murilo Alves</option>
+                <option>Nayla</option><option>Nayra</option><option>Nicolle</option>
+                <option>Paulo</option><option>Pedro</option><option>Richarlison</option>
+                <option>Ruan</option><option>Thalys</option><option>Thomas</option><option>Vitor</option>
+            </select>
+
+            <label>Em qual categoria?</label>
+            <select id="categoria">
+                <option value="">Selecione a categoria...</option>
+                <option>Turista da sala</option>
+                <option>Mais estudioso</option>
+                <option>Mais engraçado</option>
+                <option>Dorme em todas aulas</option>
+                <option>Mais estressado(a)</option>
+                <option>Mais fofoqueiro</option>
+                <option>Topa tudo</option>
+                <option>Conversa mais</option>
+                <option>Dramático</option>
+                <option>Amado pela COPAE</option>
+                <option>Mais quieto</option>
+                <option>Mais chorão</option>
+                <option>Mais cancelável</option>
+                <option>Mais amoroso</option>
+                <option>O músico da sala</option>
+                <option>O mais compreensível</option>
+                <option>O mais maromba</option>
+                <option>O mais atrasado</option>
+                <option>O mais comilão</option>
+                <option>O mais comunicativo</option>
+                <option>O atleta da sala</option>
+                <option>O mais fofinho da sala</option>
+                <option>O mais participativo</option>
+                <option>O mais “fala besteira na hora errada”</option>
+                <option>O que ri mais alto</option>
+                <option>O mais empreendedor</option>
+                <option>O protagonista</option>
+            </select>
+
+            <button onclick="registrar()">CONFIRMAR VOTO 🇧🇷</button>
+        </div>
+
+        <div class="card">
+            <h2>🔐 Área Restrita</h2>
+            <label>Senha de administrador:</label>
+            <input type="password" id="senhaAdmin" placeholder="••••••••" />
+            <button class="btn-secondary" onclick="acessarRespostas()">Acessar Resultados</button>
+        </div>
+
+        <div id="respostasSec" class="card">
+            <h2>📊 Apuração dos Votos</h2>
+
+            <div id="listaRespostas"></div>
+
+            <div class="honra">
+                <strong>🎖️ Menção Honrosa</strong>
+                Bárbara • Ana Gabrielly • Kellyane • Thaynara
+                <br>
+                - Por terem nos acompanhado durante a nossa jornada acadêmica - seja durante frações de bimestres, ou então durante quase o ano todo. Obrigado por partilharem amizades!
+            </div>
+
+            <button onclick="exportarExcel()" style="background: var(--primary); margin-top: 25px;">
+                📄 Baixar Relatório Excel
+            </button>
+            <button class="btn-danger" onclick="resetarVotos()">
+                🗑️ Zerar Todos os Votos
+            </button>
+        </div>
+
+    </div>
+
+<script>
+    // --- FUNÇÃO DE CONFETES BRASIL ---
+    function soltarConfetes() {
+        // Dispara confetes nas cores da bandeira: Verde, Amarelo, Azul
+        var colors = ['#009c3b', '#ffdf00', '#002776'];
+
+        // Explosão no centro
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: colors,
+            zIndex: 9999
+        });
+
+        // Chuva lateral esquerda
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0 },
+                colors: colors
+            });
+        }, 200);
+
+        // Chuva lateral direita
+        setTimeout(() => {
+            confetti({
+                particleCount: 50,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1 },
+                colors: colors
+            });
+        }, 200);
+    }
+
+
+    // --- LÓGICA DE VOTAÇÃO ---
+
+    function registrar() {
+        const usuarioInput = document.getElementById('usuario');
+        const alunoInput = document.getElementById('aluno');
+        const categoriaInput = document.getElementById('categoria');
+
+        const usuario = usuarioInput.value;
+        const aluno = alunoInput.value;
+        const categoria = categoriaInput.value;
+
+        if (!usuario || !aluno || !categoria) {
+            alert("⚠️ Opa! Preencha todos os campos para votar.");
+            return;
+        }
+
+        let votos = JSON.parse(localStorage.getItem("votosTurma") || "[]");
+
+        // Verifica voto duplicado (1 voto por pessoa no total)
+        if (votos.some(v => v.usuario === usuario)) {
+           alert("⛔ Você já votou! Obrigado pela participação.");
+           return;
+        }
+
+        // Salva
+        votos.push({ usuario, aluno, categoria });
+        localStorage.setItem("votosTurma", JSON.stringify(votos));
+        
+        // --- EFEITOS DE SUCESSO ---
+        soltarConfetes(); // Chama a função dos confetes!
+        alert("✅ Voto registrado com sucesso! Valeu!");
+
+        // Limpa campos
+        usuarioInput.value = "";
+        alunoInput.value = "";
+        categoriaInput.value = "";
+        
+        // Rola para o topo suavemente
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- LÓGICA DE ADMINISTRAÇÃO ---
+
+    function acessarRespostas() {
+        const senhaInput = document.getElementById('senhaAdmin');
+        const areaRespostas = document.getElementById('respostasSec');
+
+        if (senhaInput.value === "acessounlockseg20") {
+            areaRespostas.style.display = "block";
+            areaRespostas.scrollIntoView({ behavior: 'smooth' });
+            gerarSintese();
+            soltarConfetes(); // Um festinha pro admin também rs
+        } else {
+            alert("❌ Senha incorreta!");
+        }
+    }
+
+    function gerarSintese() {
+        let votos = JSON.parse(localStorage.getItem("votosTurma") || "[]");
+        const contagem = {};
+
+        votos.forEach(v => {
+            if (!contagem[v.categoria]) contagem[v.categoria] = {};
+            contagem[v.categoria][v.aluno] = (contagem[v.categoria][v.aluno] || 0) + 1;
+        });
+
+        let html = "";
+        const listaDiv = document.getElementById('listaRespostas');
+
+        if (Object.keys(contagem).length === 0) {
+            html = "<p style='text-align:center; opacity:0.6; padding:20px;'>Nenhum voto registrado ainda.</p>";
+        } else {
+            for (const categoria in contagem) {
+                html += `<div class="result-group"><h3>${categoria}</h3>`;
+                const lista = Object.entries(contagem[categoria]).sort((a, b) => b[1] - a[1]);
+                lista.forEach(([aluno, qtd]) => {
+                    html += `<div class="result-item">
+                                <span>${aluno}</span>
+                                <strong style="color:var(--gold)">${qtd} voto(s)</strong>
+                             </div>`;
+                });
+                html += `</div>`;
+            }
+        }
+
+        listaDiv.innerHTML = html;
+    }
+
+    function exportarExcel() {
+        let votos = JSON.parse(localStorage.getItem("votosTurma") || "[]");
+        if (votos.length === 0) return alert("⚠️ Sem votos para exportar!");
+
+        let csv = "Usuario,Voto_Para_Aluno,Categoria\n";
+        votos.forEach(v => { csv += `${v.usuario},${v.aluno},${v.categoria}\n`; });
+
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "votacao_turma_2024.csv";
+        a.click();
+    }
+    
+    // --- FUNÇÃO PARA ZERAR VOTOS (NOVO) ---
+    function resetarVotos() {
+        const confirmar = confirm("🚨 ATENÇÃO: Tem certeza que deseja APAGAR TODOS os votos registrados? Essa ação é IRREVERSÍVEL.");
+        
+        if (confirmar) {
+            // Remove o item de votos do armazenamento local
+            localStorage.removeItem("votosTurma");
+            
+            // Atualiza a tela de resultados para mostrar que está vazia
+            document.getElementById('listaRespostas').innerHTML = "<p style='text-align:center; opacity:0.6; padding:20px;'>Nenhum voto registrado ainda.</p>";
+            
+            alert("✅ Todos os votos foram zerados com sucesso! Você pode começar uma nova votação.");
+            
+            // Rola para o topo suavemente para recomeçar
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+</script>
+
+</body>
+</html>
